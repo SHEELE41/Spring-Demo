@@ -28,6 +28,12 @@ class JwtUtilTest {
     }
 
     @Test
+    public void extractUserId() {
+        String token = jwtUtil.generateToken(userDetails);
+        assertEquals(4, jwtUtil.extractUserId(token));
+    }
+
+    @Test
     public void extractExpiration() {
         userDetails.setUsername("SEOK JONG KYU");
         String token = jwtUtil.generateToken(userDetails);
@@ -38,7 +44,7 @@ class JwtUtilTest {
     public void generateToken() {
         userDetails.setUsername("SEOK JONG KYU");
         String token = jwtUtil.generateToken(userDetails);
-
+        System.out.println(token);
     }
 
     @Test

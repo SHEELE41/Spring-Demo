@@ -19,9 +19,19 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
     @Value("${jwt.secret}")
-    private String SECRET_KEY = "xQV7zIIBUqeaUjm50jsoOUZ5sLp7D3g3SvPuJpVrjbzT5GWkmWlurs2itflayjAeJ8VjFSqFCiVZlN804bh6693bgxFJTM_xyxP0-RdwPhmIIRL";
+    private final String SECRET_KEY = "xQV7zIIBUqeaUjm50jsoOUZ5sLp7D3g3SvPuJpVrjbzT5GWkmWlurs2itflayjAeJ8VjFSqFCiVZlN804bh6693bgxFJTM_xyxP0-RdwPhmIIRL";
+
+    public int extractUserId(String token) {
+        final Claims claims = extractAllClaims(token);
+        return (int) claims.get("userId");
+    }
 
     public String extractUsername(String token) {
+        final Claims claims = extractAllClaims(token);
+        return (String) claims.get("username");
+    }
+
+    public String extractSubject(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -45,17 +55,21 @@ public class JwtUtil {
     // 토큰 생성
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, userDetails.getUsername());
+        double dValue = Math.random();
+        int iValue = (int)(dValue * 10);
+        claims.put("userId", 4);    // iValue
+        claims.put("username", userDetails.getUsername());
+        return createToken(claims);
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
+    private String createToken(Map<String, Object> claims) {
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
         byte[] secretKeyBytes = DatatypeConverter.parseBase64Binary(SECRET_KEY);
         Key signingKey = new SecretKeySpec(secretKeyBytes, signatureAlgorithm.getJcaName());
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(subject)
+                .setSubject("User Login Token")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(signingKey, signatureAlgorithm)
