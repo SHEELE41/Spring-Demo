@@ -1,9 +1,9 @@
 package com.example.demo.util;
 
 import com.example.demo.model.UserDetails;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+@Slf4j
 @Component
 public class JwtUtil {
     @Value("${jwt.secret}")
@@ -62,10 +63,27 @@ public class JwtUtil {
     }
 
     // 토큰이 유효한지 검증
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) &&
-                !isTokenExpired(token));
+    public Boolean validateToken(String token) {
+        if (!token.isEmpty()) {
+            try {
+                Jwts.parserBuilder()
+                        .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+                        .build()
+                        .parseClaimsJws(token);
+                return true;
+            } catch (SignatureException e) {
+                log.error("Invalid JWT signature", e);
+            } catch (MalformedJwtException e) {
+                log.error("Invalid JWT token", e);
+            } catch (ExpiredJwtException e) {
+                log.error("Expired JWT token", e);
+            } catch (UnsupportedJwtException e) {
+                log.error("Unsupported JWT token", e);
+            } catch (IllegalArgumentException e) {
+                log.error("JWT claims string is empty.", e);
+            }
+        }
+        return false;
     }
 
     private Boolean isTokenExpired(String token) {

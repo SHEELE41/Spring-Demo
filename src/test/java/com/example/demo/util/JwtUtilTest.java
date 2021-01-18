@@ -6,8 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JwtUtilTest {
     JwtUtil jwtUtil;
@@ -47,6 +46,7 @@ class JwtUtilTest {
         userDetails.setUsername("SEOK JONG KYU");
         String token = jwtUtil.generateToken(userDetails);
 
-        assertTrue(jwtUtil.validateToken(token, userDetails));
+        assertTrue(jwtUtil.validateToken(token));
+        assertFalse(jwtUtil.validateToken("aewifjaewvwaef"));
     }
 }
